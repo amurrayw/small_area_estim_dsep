@@ -151,6 +151,22 @@ compare.mse <- function(n.obs=1000, coef1=runif(n=1, min=-1, max=1), coef2=runif
 
 summary(replicate(n=1000, compare.mse()))
 
+
+compare.coef.eff <- c()
+for(i in seq(from=0, to=1, by=.0001)){
+    compare.coef.eff <- c(compare.coef.eff, compare.mse(coef1=1, coef2=i))
+}
+
+#pdf("relationship_between_effect_size_and_violating_dsep.pdf")
+#plot(x=seq(from=0, to=1, by=.0001), y=compare.coef.eff)
+#dev.off()
+
+
+
+ggplot(data=data.frame(y=compare.coef.eff, x=seq(from=0, to=1, by=.0001)), aes(x=x, y=y))+
+    geom_smooth(method='lm',formula=y~x, se=TRUE)
+
+
 ##TODO: Note, even though the fit seems better with the erroneous
 ##variable, if the goal of the small area estimation is to guide
 ##policy (i.e., predict the effect of a change of
