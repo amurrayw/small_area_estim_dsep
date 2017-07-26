@@ -1,3 +1,6 @@
+library(ggplot2)
+
+
 
 ##Possibly swap this bit out with one that can read in a dag from a
 ##file.
@@ -5,13 +8,20 @@ gen.data <- function(n.obs=1000, coef1=runif(n=1, min=-1, max=1), coef2=runif(n=
 
 
     ## This graph contains 3 nodes, with a collider at x2.
-    x1 <- rnorm(n.obs)
+    x1 <-  rnorm(n.obs)
     x3 <- rnorm(n.obs)
     x2 <- rnorm(n.obs) + x1*coef1 + x3*coef2
 
     x4 <- rnorm(n.obs) + x3*coef2
 
-##    x4 <- rnorm(n.obs)+x3*.001
+    ##Example of m-structure graph..
+    ## x4 <- rnorm(n.obs)
+    ## x5 <- rnorm(n.obs)
+    ## x1 <- runif(1, -1, 1)*x4 + rnorm(n.obs)
+    ## x2 <- runif(1, -1, 1)*x5 + rnorm(n.obs)
+    ## x3 <- runif(1,-1,1)*x4+runif(1,-1,1)*x5 + rnorm(n.obs)
+
+
     return(data.frame(x1, x2, x3, x4)) 
    
 }
@@ -140,7 +150,8 @@ compare.mse <- function(n.obs=1000, coef1=runif(n=1, min=-1, max=1), coef2=runif
     
     models <- run.regression(data.train)
 
-##    new.data <- data[sample(1:nrow(data), replace=TRUE),]
+    ## Bootstrap by row version (old).
+    ## data.test <- data.train[sample(1:nrow(data.train), replace=TRUE),]
     
     model.1.mse <- mean((data.test$x1-predict(models$model.correct, newdata=data.test))^2)
     model.2.mse <- mean((data.test$x1-predict(models$model.false, newdata=data.test))^2)
@@ -174,10 +185,27 @@ ggplot(data=data.frame(y=compare.coef.eff, x=seq(from=0, to=1, by=.0001)), aes(x
 ##though the model seems to predict well in the non-intervention case.
 
 ##Also note: it appears that the closer the d-sep violating (and
-##otherwise unrelated variable) is the more likely the mse is harmed by
-##the almost indep variable being included.
+##otherwise unrelated variable) is the more likely the mse is harmed
+##by the almost indep variable being included. This would suggest that
+##unless the effect size of a variable on the dependent variable is
+##"large", the variable shouldn't be included without being aware of
+##the causal structure.
 
 
+
+
+##TODO: Based on winship's paper, it appears that my thought that
+##sampling approach and decisions about model hierarchy/construction
+##are equivalent to conditioning. This implies that even when no
+##"auxillary" variables are included, an SAE (or a more general
+##analysis) would be prone to the collider problem.
 
 ##TODO: try changing the edges being compared to x1 and x3 (where
 ##there shouldn't be an edge connecting the two).
+
+##TODO: What happens when you use a variable estimated with SAE method
+##as a variable in some other statistical model? Wouldn't the
+##dependency of conditioning on other variables lead to false
+##dependencies between other variables in the subsequent model (and
+##biased estimate of their various effects)? I should look in to this.
+
